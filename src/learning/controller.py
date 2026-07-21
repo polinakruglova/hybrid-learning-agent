@@ -5,7 +5,7 @@ from typing import Any
 from src.agents import HybridAgent
 from src.memory import Experience, ExperienceBuffer
 from src.rl import QTablePolicy
-from src.rules import Rule, RuleMiner, RuleStore
+from src.rules import RuleStore
 from src.state import State
 
 
@@ -16,10 +16,14 @@ class LearningController:
     Отвечает за:
 
     - выбор действия через HybridAgent;
-    - сохранение опыта;
+    - сохранение опыта в ExperienceBuffer;
     - обновление Q-таблицы;
-    - создание символических правил;
-    - сбор статистики.
+    - сбор статистики обучения.
+
+    Символические правила здесь не создаются.
+
+    Правила периодически извлекаются из накопленного опыта
+    отдельным NeuralRuleTrainer.
     """
 
     def __init__(
@@ -27,7 +31,6 @@ class LearningController:
         agent: HybridAgent,
         q_policy: QTablePolicy,
         experience_buffer: ExperienceBuffer,
-        rule_miner: RuleMiner,
         rule_store: RuleStore,
     ) -> None:
         if not isinstance(agent, HybridAgent):
@@ -49,11 +52,6 @@ class LearningController:
                 "ExperienceBuffer."
             )
 
-        if not isinstance(rule_miner, RuleMiner):
-            raise TypeError(
-                "rule_miner должен быть объектом RuleMiner."
-            )
-
         if not isinstance(rule_store, RuleStore):
             raise TypeError(
                 "rule_store должен быть объектом RuleStore."
@@ -62,7 +60,6 @@ class LearningController:
         self._agent = agent
         self._q_policy = q_policy
         self._experience_buffer = experience_buffer
-        self._rule_miner = rule_miner
         self._rule_store = rule_store
 
         self._total_steps = 0
@@ -72,7 +69,6 @@ class LearningController:
 
         self._last_experience: Experience | None = None
         self._last_q_value: float | None = None
-        self._last_mined_rule: Rule | None = None
 
     @property
     def agent(self) -> HybridAgent:
@@ -87,10 +83,6 @@ class LearningController:
         self,
     ) -> ExperienceBuffer:
         return self._experience_buffer
-
-    @property
-    def rule_miner(self) -> RuleMiner:
-        return self._rule_miner
 
     @property
     def rule_store(self) -> RuleStore:
@@ -139,12 +131,6 @@ class LearningController:
     def last_q_value(self) -> float | None:
         return self._last_q_value
 
-    @property
-    def last_mined_rule(
-        self,
-    ) -> Rule | None:
-        return self._last_mined_rule
-
     def choose_action(
         self,
         state: State,
@@ -171,6 +157,11 @@ class LearningController:
     ) -> Experience:
         """
         Обрабатывает один переход среды.
+
+        Переход сохраняется в ExperienceBuffer,
+        после чего обновляется Q-таблица.
+
+        Правила после отдельного перехода не создаются.
         """
         self._validate_transition(
             state=state,
@@ -198,25 +189,17 @@ class LearningController:
             source=experience_source,
         )
 
+        # Сохраняем переход для последующего обучения
+        # NeuralPatternMiner.
         self._experience_buffer.add(experience)
 
+        # Обновляем Q-learning.
         new_q_value = self._q_policy.update(
             state=state,
             action=action,
             reward=float(reward),
             next_state=next_state,
             done=done,
-        )
-
-        mined_rules = self._rule_miner.mine_into_store(
-            experiences=[experience],
-            store=self._rule_store,
-        )
-
-        mined_rule = (
-            mined_rules[0]
-            if mined_rules
-            else None
         )
 
         self._total_steps += 1
@@ -230,7 +213,6 @@ class LearningController:
 
         self._last_experience = experience
         self._last_q_value = new_q_value
-        self._last_mined_rule = mined_rule
 
         return experience
 
@@ -310,7 +292,6 @@ class LearningController:
 
         self._last_experience = None
         self._last_q_value = None
-        self._last_mined_rule = None
 
     def clear_learning_data(self) -> None:
         """
