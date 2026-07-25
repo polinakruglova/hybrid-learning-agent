@@ -1,20 +1,35 @@
-# Virtual environment
-venv/
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
+*.pyd
+*.so
 
-# Pytest
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Tests
 .pytest_cache/
+.coverage
+htmlcov/
 
-# Training results
-outputs/
-
-# VS Code
+# IDE
 .vscode/
+.idea/
 
-# Jupyter
-.ipynb_checkpoints/
+# Generated files
+outputs/*
+!outputs/.gitkeep
 
-inspect_project_api.py
+# Models
+*.pt
+*.pth
+*.ckpt
+
+# Logs
+*.log
+
+# Operating system
+.DS_Store
+Thumbs.db

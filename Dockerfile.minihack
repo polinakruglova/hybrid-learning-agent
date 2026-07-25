@@ -1,0 +1,29 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        flex \
+        bison \
+        libncurses-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements-minihack.txt .
+
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && python -m pip install -r requirements-minihack.txt
+
+COPY . .
+
+CMD ["python", "scripts/inspect_minihack.py"]

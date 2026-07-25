@@ -1,54 +1,22 @@
-# Hybrid Learning Agent
+# Hybrid Learning Agent New
 
-## Цель проекта
+Универсальная экспериментальная платформа для гибридных интеллектуальных агентов.
 
-Создать интеллектуального агента, который сочетает:
+Проект объединяет:
 
-- Reinforcement Learning
-- автоматически извлечённые правила
-- память опыта
-- логический вывод
+- reinforcement learning;
+- нейросетевой поиск закономерностей;
+- генерацию гипотез;
+- статистическую проверку правил;
+- символическую базу знаний;
+- перенос правил между средами.
 
-## Идея
+## Первая среда
 
-Большинство RL-агентов учатся только на наградах.
+MiniHack / NetHack Learning Environment.
 
-В этом проекте агент дополнительно извлекает знания из своего опыта и превращает их в правила.
+## Запуск проверки
 
-Полученные правила используются для ускорения обучения и принятия решений.
-
-## Архитектура
-
-Environment
-
-↓
-
-State Parser
-
-↓
-
-Predicate Generator
-
-↓
-
-Rule Generator
-
-↓
-
-Knowledge Base
-
-↓
-
-Planner
-
-↓
-
-Hybrid Agent
-
-↓
-
-Experience Memory
-
-↓
-
-Evaluation
+```powershell
+docker build -f Dockerfile.minihack -t hybrid-minihack .
+docker run --rm hybrid-minihack

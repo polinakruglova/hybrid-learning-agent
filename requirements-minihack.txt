@@ -1,0 +1,4 @@
+minihack
+gymnasium
+numpy
+pytest
