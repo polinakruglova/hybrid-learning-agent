@@ -617,7 +617,7 @@ def main():
     print("=" * 70)
 
     env.close()
-
+    return base_rules + conditional_rules
 
 if __name__ == "__main__":
     main()

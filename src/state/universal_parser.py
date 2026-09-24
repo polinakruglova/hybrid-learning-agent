@@ -1,6 +1,6 @@
 from __future__ import annotations
-
-from dataclasses import asdict, is_dataclass
+ячсбюит
+from daясtaclasses import asdict, is_dataclass
 from numbers import Number
 from typing import Any, Mapping, Sequence
 
